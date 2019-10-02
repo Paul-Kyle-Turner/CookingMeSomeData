@@ -8,7 +8,7 @@ def database_setup(training_data_json):
     foodies_cursor = foodies.cursor()
     foodies_cursor.execute('''
         CREATE TABLE IF NOT EXISTS food(
-        id int NOT NULL,
+        id integer NOT NULL,
         category TEXT NOT NULL,
         UNIQUE(id));''')
     foodies_cursor.execute('''
@@ -19,23 +19,34 @@ def database_setup(training_data_json):
     foodies_cursor.execute('''
         CREATE TABLE IF NOT EXISTS bridge(
         food_id integer NOT NULL REFERENCES food(id),
-        ingredients_id integer NOT NULL REFERENCES ingredients(id),
-        PRIMARY KEY (food_id, ingredients_id));''')
+        ingredients_id integer NOT NULL REFERENCES ingredients(id));''')
     foodies.commit()
-    for item in training_data_json:
-        categories.add(item['cuisine'])
+    for food in training_data_json:
+        categories.add(food['cuisine'])
         foodies_cursor.execute('''
             INSERT OR IGNORE INTO food(id, category)
-            VALUES(?,?)''', [item['id'], item['cuisine']])
+            VALUES(?,?)''', [food['id'], food['cuisine']])
         item_id = foodies_cursor.lastrowid
-        for ingredient in item['ingredients']:
+        #print("\n")
+        #print("FOOD ID")
+        #print(item_id)
+        for ingredient in food['ingredients']:
             foodies_cursor.execute('''
-                INSERT OR IGNORE INTO ingredients(id, ingredient)
-                VALUES(?,?);''', [None, ingredient])
-            ingredient_id = foodies_cursor.lastrowid
+                SELECT id
+                FROM ingredients
+                WHERE ingredient = ?''', [ingredient])
+            ingredient_id_tuple = foodies_cursor.fetchone()
+            if ingredient_id_tuple is None:
+                foodies_cursor.execute('''
+                    INSERT INTO ingredients(id, ingredient)
+                    VALUES(?,?);''', [None, ingredient])
+                ingredient_id = foodies_cursor.lastrowid
+            else:
+                ingredient_id = ingredient_id_tuple[0]
             foodies_cursor.execute('''
-                INSERT OR IGNORE INTO bridge(food_id, ingredients_id)
+                INSERT INTO bridge(food_id, ingredients_id)
                 VALUES(?,?);''', [item_id, ingredient_id])
+            #print(f'{ingredient_id} {ingredient}')
     foodies.commit()
     return categories
 
