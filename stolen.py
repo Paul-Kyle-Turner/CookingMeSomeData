@@ -1,5 +1,10 @@
 # Most of this file was taken from https://www.kaggle.com/alonalevy/cultural-diffusion-by-recipes
 # Author alona_levy
+# Another large portion of used code was from https://www.kaggle.com/dipayan/whatscooking-python
+# Author Dipayan
+
+# some combination work was done and some renaming such that it was more readable.
+# All credit for the models created go to both Alona_levy and Dipayan
 
 import numpy as np
 import pandas as pd
